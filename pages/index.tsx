@@ -326,12 +326,10 @@ const Home: NextPage = () => {
             <button
               disabled={hasOptionsError}
               onClick={handleGeneratePassword}
-              className='w-full py-5 text-gray-400 uppercase transition ease-in-out bg-green-100 border-2 border-green-100 disabled:cursor-not-allowed group hover:bg-opacity-0 hover:text-green-100 focus:ring-4 focus:ring-green-100 focus:outline-none'
+              className='flex items-center justify-center w-full py-5 space-x-2 text-gray-400 uppercase transition ease-in-out bg-green-100 border-2 border-green-100 disabled:cursor-not-allowed group hover:bg-opacity-0 hover:text-green-100 focus:ring-4 focus:ring-green-100 focus:outline-none'
             >
-              <div className='flex items-center justify-center space-x-2'>
-                <span>Generate</span>
-                <ArrowRight className='w-4 h-4 mb-[1px] ' />
-              </div>
+              <span>Generate</span>
+              <ArrowRight className='w-4 h-4 mb-[1px] ' />
             </button>
           </div>
         </div>
