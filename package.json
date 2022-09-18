@@ -13,10 +13,13 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@headlessui/react": "^1.7.2",
+    "check-password-strength": "^2.0.7",
     "framer-motion": "^7.3.5",
+    "generate-password": "^1.7.0",
     "next": "12.3.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.35.0",
     "react-range": "^1.8.14",
     "react-use": "^17.4.0"
   },

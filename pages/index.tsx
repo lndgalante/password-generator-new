@@ -1,21 +1,21 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import type { NextPage } from 'next';
+import { motion } from 'framer-motion';
 import { useClipboard } from '@chakra-ui/react';
 import { Range, getTrackBackground } from 'react-range';
+import generatePassword from 'generate-password';
+import { passwordStrength } from 'check-password-strength';
 
 /*
   Project dependencies:
   - Next.js
   - Tailwind CSS
-  - Heroicons
-  - React Range
-  - chakra-ui (solo para el useClipbloard)
+  - Framer Motion
+  - Otras libs: Heroicons, React Range, generate-password
 
   TODO:
   - Mobile responsive
-  - Add states for StrengthPassword component
-  - Add logic for password generation (check crypto web api)
   - Review por Hugo, Goncy, Tucu
 */
 
@@ -30,10 +30,10 @@ type SliderProps = {
 
 function Slider({ label, step, min, max, value, onChange }: SliderProps) {
   return (
-    <div className='space-y-6 group pb-4'>
+    <div className='pb-4 space-y-6 group'>
       <div className='flex flex-row justify-between'>
-        <span className='text-gray-100/40 group-hover:text-gray-100 transition'>{label}</span>
-        <span className='text-green-100/40 group-hover:text-green-100 transition text-3xl'>{value}</span>
+        <span className='transition text-gray-100/40 group-hover:text-gray-100'>{label}</span>
+        <span className='text-3xl transition text-green-100/40 group-hover:text-green-100'>{value}</span>
       </div>
       <Range
         step={step}
@@ -68,7 +68,7 @@ function Slider({ label, step, min, max, value, onChange }: SliderProps) {
               width: '28px',
               borderRadius: '100%',
             }}
-            className='bg-gray-100 group-hover:bg-gray-400 group-hover:border-green-100 group-hover:border-2 transition'
+            className='transition bg-gray-100 group-hover:bg-gray-400 group-hover:border-green-100 group-hover:border-2'
           />
         )}
       />
@@ -90,23 +90,71 @@ function Checkbox({ label, checked, onChange }: CheckboxProps) {
 
   return (
     <label className='flex flex-row items-center space-x-4 cursor-pointer select-none'>
-      <input type='checkbox' className='accent-green-100 w-5 h-5' checked={checked} onChange={handleChange} />
+      <input type='checkbox' className='w-5 h-5 accent-green-100' checked={checked} onChange={handleChange} />
       <span>{label}</span>
     </label>
   );
 }
 
-function PasswordStrength() {
+function TooWeak() {
   return (
-    <div className='bg-gray-400 flex justify-between px-7 py-5'>
-      <span className='uppercase text-gray-200'>Strength</span>
+    <Fragment>
+      <div className='h-7 w-[10px] bg-red-100'></div>
+      <div className='h-7 w-[10px] border-2 border-gray-100'></div>
+      <div className='h-7 w-[10px] border-2 border-gray-100'></div>
+      <div className='h-7 w-[10px] border-2 border-gray-100'></div>
+    </Fragment>
+  );
+}
+
+function Weak() {
+  return (
+    <Fragment>
+      <div className='h-7 w-[10px] bg-orange-100'></div>
+      <div className='h-7 w-[10px] bg-orange-100'></div>
+      <div className='h-7 w-[10px] border-2 border-gray-100'></div>
+      <div className='h-7 w-[10px] border-2 border-gray-100'></div>
+    </Fragment>
+  );
+}
+
+function Medium() {
+  return (
+    <Fragment>
+      <div className='h-7 w-[10px] bg-yellow-100'></div>
+      <div className='h-7 w-[10px] bg-yellow-100'></div>
+      <div className='h-7 w-[10px] bg-yellow-100'></div>
+      <div className='h-7 w-[10px] border-2 border-gray-100'></div>
+    </Fragment>
+  );
+}
+
+function Strong() {
+  return (
+    <Fragment>
+      <div className='h-7 w-[10px] bg-green-100'></div>
+      <div className='h-7 w-[10px] bg-green-100'></div>
+      <div className='h-7 w-[10px] bg-green-100'></div>
+      <div className='h-7 w-[10px] bg-green-100'></div>
+    </Fragment>
+  );
+}
+
+type Props = {
+  label: string;
+};
+
+function PasswordStrength({ label }: Props) {
+  return (
+    <div className='flex justify-between py-5 bg-gray-400 px-7'>
+      <span className='text-gray-200 uppercase'>Strength</span>
       <div className='flex flex-row space-x-4'>
-        <span className='text-2xl'>MEDIUM</span>
+        <span className='text-2xl'>{label}</span>
         <div className='flex space-x-2'>
-          <div className='h-7 w-[10px] bg-yellow-100'></div>
-          <div className='h-7 w-[10px] bg-yellow-100'></div>
-          <div className='h-7 w-[10px] bg-yellow-100'></div>
-          <div className='h-7 w-[10px] border-2 border-gray-100'></div>
+          {label === 'Too weak' ? <TooWeak /> : null}
+          {label === 'Weak' ? <Weak /> : null}
+          {label === 'Medium' ? <Medium /> : null}
+          {label === 'Strong' ? <Strong /> : null}
         </div>
       </div>
     </div>
@@ -132,7 +180,7 @@ function ArrowRight({ className }: IconProps) {
   );
 }
 
-function Duplicate() {
+function Duplicate({ className }: IconProps) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -140,7 +188,7 @@ function Duplicate() {
       viewBox='0 0 24 24'
       strokeWidth={1.5}
       stroke='currentColor'
-      className='w-6 h-6'
+      className={`w-6 h-6 ${className ?? ''}`}
     >
       <path
         strokeLinecap='round'
@@ -151,16 +199,25 @@ function Duplicate() {
   );
 }
 
+const initialCharacterLength = 10;
+
+const initialPassword = generatePassword.generate({
+  length: initialCharacterLength,
+  numbers: true,
+});
+
+const { value: initialStrength } = passwordStrength(initialPassword);
+
 const Home: NextPage = () => {
   // react hooks
-  const [characterLength, setCharacterLength] = useState<number>(10);
+  const [password, setPassword] = useState(initialPassword);
+  const [strength, setStrength] = useState(initialStrength);
+  const [characterLength, setCharacterLength] = useState<number>(initialCharacterLength);
+
   const [shouldIncludeUpperCaseLetters, setShouldIncludeUpperCaseLetters] = useState<boolean>(false);
   const [shouldIncludeLowercaseLetters, setShouldIncludeLowercaseLetters] = useState<boolean>(false);
   const [shouldIncludeNumbers, setShouldIncludeNumbers] = useState<boolean>(false);
   const [shouldIncludeSymbols, setShouldIncludeSymbols] = useState<boolean>(false);
-
-  // constants
-  const password = 'PTx1f5DaFX';
 
   // react-use hooks
   const { hasCopied, onCopy } = useClipboard(password);
@@ -169,6 +226,29 @@ const Home: NextPage = () => {
   function handleSliderChange(values: number[]) {
     setCharacterLength(values[0]);
   }
+
+  function handleGeneratePassword() {
+    const password = generatePassword.generate({
+      length: characterLength,
+      numbers: shouldIncludeNumbers,
+      symbols: shouldIncludeSymbols,
+      lowercase: shouldIncludeLowercaseLetters,
+      uppercase: shouldIncludeUpperCaseLetters,
+    });
+    const { value } = passwordStrength(password);
+
+    setPassword(password);
+    setStrength(value);
+  }
+
+  // constant
+  const copiedStatus = hasCopied ? 'copied' : 'not-copied';
+  const hasOptionsError = ![
+    shouldIncludeUpperCaseLetters,
+    shouldIncludeLowercaseLetters,
+    shouldIncludeNumbers,
+    shouldIncludeSymbols,
+  ].some(Boolean);
 
   return (
     <div>
@@ -179,23 +259,41 @@ const Home: NextPage = () => {
       </Head>
 
       <main className='min-h-screen bg-gray-400 text-gray-100  text-lg font-["JetBrains_Mono"] flex items-center justify-center'>
-        <div className='space-y-6  max-w-lg w-full'>
-          <h1 className='text-center text-gray-200 text-2xl'>Password Generator</h1>
+        <div className='w-full max-w-lg space-y-6'>
+          <h1 className='text-2xl text-center text-gray-200'>Password Generator</h1>
 
-          <div className='bg-gray-300 px-8 py-6 flex flex-row justify-between items-center'>
-            <span className='text-3xl'>{password}</span>
+          <div className='flex flex-row items-center justify-between px-8 py-6 bg-gray-300'>
+            <motion.span
+              className='text-3xl'
+              key={password}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              {password}
+            </motion.span>
             <button
               onClick={onCopy}
               className={`flex space-x-2 p-2 h-11 transition-all ease-in-out ${hasCopied ? 'text-green-100' : ''}`}
             >
-              <span className={`${hasCopied ? 'opacity-100' : 'opacity-0'} transition ease-in-out uppercase`}>
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={copiedStatus}
+                variants={{
+                  copied: {
+                    opacity: 1,
+                  },
+                }}
+                className='text-green-100 uppercase'
+              >
                 Copied
-              </span>
+              </motion.span>
               <Duplicate />
             </button>
           </div>
 
-          <div className='bg-gray-300 p-8 space-y-8'>
+          <div className='p-8 space-y-8 bg-gray-300'>
             <Slider
               label='Character Length'
               step={1}
@@ -218,12 +316,19 @@ const Home: NextPage = () => {
               />
               <Checkbox label='Include Numbers' checked={shouldIncludeNumbers} onChange={setShouldIncludeNumbers} />
               <Checkbox label='Include Symbols' checked={shouldIncludeSymbols} onChange={setShouldIncludeSymbols} />
+              <p className='h-5 text-sm text-red-500 uppercase'>
+                {hasOptionsError ? 'Should include at least one option' : ''}
+              </p>
             </div>
 
-            <PasswordStrength />
+            <PasswordStrength label={strength} />
 
-            <button className='group transition ease-in-out text-gray-400 w-full bg-green-100 hover:bg-opacity-0 hover:text-green-100 border-green-100 border-2 focus:ring-4 focus:ring-green-100 py-5 focus:outline-none uppercase'>
-              <div className='flex justify-center items-center space-x-2'>
+            <button
+              disabled={hasOptionsError}
+              onClick={handleGeneratePassword}
+              className='w-full py-5 text-gray-400 uppercase transition ease-in-out bg-green-100 border-2 border-green-100 disabled:cursor-not-allowed group hover:bg-opacity-0 hover:text-green-100 focus:ring-4 focus:ring-green-100 focus:outline-none'
+            >
+              <div className='flex items-center justify-center space-x-2'>
                 <span>Generate</span>
                 <ArrowRight className='w-4 h-4 mb-[1px] ' />
               </div>
