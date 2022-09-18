@@ -214,7 +214,7 @@ const Home: NextPage = () => {
   const [strength, setStrength] = useState(initialStrength);
   const [characterLength, setCharacterLength] = useState<number>(initialCharacterLength);
 
-  const [shouldIncludeUpperCaseLetters, setShouldIncludeUpperCaseLetters] = useState<boolean>(false);
+  const [shouldIncludeUpperCaseLetters, setShouldIncludeUpperCaseLetters] = useState<boolean>(true);
   const [shouldIncludeLowercaseLetters, setShouldIncludeLowercaseLetters] = useState<boolean>(false);
   const [shouldIncludeNumbers, setShouldIncludeNumbers] = useState<boolean>(false);
   const [shouldIncludeSymbols, setShouldIncludeSymbols] = useState<boolean>(false);
